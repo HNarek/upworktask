@@ -1,18 +1,26 @@
-###include requerad library
+##### include requerad library
 require 'selenium-webdriver'
-require 'page-object'
-require 'watir'
 
-
-class UpWorkPage
-  include PageObject
-  page_url('https://www.upwork.com')
+class Upwork
 
   SEARCH_BOX        = { id: 'q'     }
   DROPDOWN_XPAT        = { xpath: "//div[1]/div[1]/form/div/span"     }
   
+
+  attr_reader :driver
+
+  def initialize(driver)
+    @driver = driver
+    visit
+    
+  end
+
+  def visit
+    driver.get 'https://upwork.com'
+  end
+
   def focus_on(search_term)
-    driver.find_element(SEARCH_BOX).clear
+    
     driver.find_element(SEARCH_BOX).send_keys search_term
     driver.find_element(SEARCH_BOX).click
   end
@@ -38,6 +46,11 @@ class UpWorkPage
   def find_profilePage()
 	driver.find_element(id: "oProfilePage")
   end
+  
+  def navigate_to(url)
+    driver.get url
+  end
+
 end
 
 
@@ -59,10 +72,9 @@ end
 browser = ""
 ##### Get parameter for define browser type and check
 if ARGV[1] == 'firefox' 
-	#driver = Selenium::WebDriver.for :firefox
-	browser = Watir::Browser.new :firefox #for clear cookes
+	browser = Selenium::WebDriver.for :firefox
 elsif ARGV[1] == 'chrome'	
-	browser = Watir::Browser.new :firefox
+	browser = Selenium::WebDriver.for :chrome
 else
 	#in case when user put wrong arguments
 	puts "Wrong args, please use firefox or chrome args"
@@ -70,20 +82,25 @@ else
 end
 
 ##### 1. Run
-pageObj = UpWorkPage.new(browser, true) ; sleep 5
+pageObj = Upwork.new(browser); sleep 5
 puts "1. Run"
 
 ##### 2. Clear cookies
-browser.cookies.clear
+puts "Avaibles Cookeies size"
+puts browser.manage().all_cookies().size();
+browser.manage.delete_all_cookies
 puts "2. Clear cookies"
+puts "Avaibles Cookeies size"
+puts browser.manage().all_cookies().size();
 
-##### Go to www.upwork.com
+
 puts "3. Go to www.upwork.com"
 
 ##### 4. Focus onto Find freelancers
 pageObj.focus_on ''; sleep 5
 puts "4. Focus onto Find freelancers"
-
+	
+	
 ##### 5. Enter  into the search input right from the dropdown and submit it (click on the magnifying glass button)
 pageObj.dropdown_select; sleep 5
 puts "5. Enter into the search input right from the dropdown"
@@ -146,9 +163,7 @@ puts "8. Make sure at least one attribute from parsed search results contains. C
 
 ##### 10. Get into that freelancer's profile  
 	pageObj.navigate_to random_freelancer["href"];  sleep 10
-	#Wait page lode
-	#wait = Selenium::WebDriver::Wait.new(:timeout => 10)
-	#wait.until { pageObj.find_profilePage.displayed? }
+	#Wait page load
 	pageObj.find_profilePage.displayed?
 	puts  "10. Get into that freelancer's profile"
 
@@ -162,7 +177,3 @@ puts "8. Make sure at least one attribute from parsed search results contains. C
 	end
 #### 12. Check whether at least one attribute contains 	
 	puts "12. Check whether at least one attribute contains"
-
-
-	
-	
